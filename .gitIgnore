@@ -1,0 +1,7 @@
+# ignore node modules
+1:node_modules/**/*
+2:node_modules/**/*
+3:node_modules/**/*
+
+# ignore .js files
+*.js
