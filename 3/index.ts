@@ -1,38 +1,8 @@
 import * as fs from 'fs';
+import { rawListeners } from 'process';
 // get readline
 import * as readline from 'readline';
-let result: number = 0;
-let opponentResult: number = 0;
-
-let realResult: number = 0;
-
-// A = X
-// B = Y
-// C = Z
-// A&&X == Rock
-// B&&Y == Paper
-// C&&Z == Scissors
-
-async function getWin(opponent:string, player:string) {
-    if (opponent === "A" && player === "X" || opponent === "B" && player === "Y" || opponent === "C" && player === "Z") {
-        console.log('Tie')
-        return "Tie"
-    } else if (opponent === 'A' && player === 'Y') {
-        return "Win"
-    } else if (opponent === 'A' && player === 'Z') {
-        return "Loss"
-    } else if (opponent === 'B' && player === 'X') { 
-        return "Loss"
-    } else if (opponent === 'B' && player === 'Z') { 
-        return "Win"
-    } else if (opponent === 'C' && player === 'X') { 
-        return "Win"
-    } else if (opponent === 'C' && player === 'Y') { 
-        return "Loss"
-    } else{
-        return "Error"
-    }
-} // Paper beats Rock, Rock beats Scissors, Scissors beats Paper, fuck it
+let temp: number = 0;
 
 
 async function processLineByLine() {
@@ -43,127 +13,128 @@ async function processLineByLine() {
     });
 
 
-    for await(const line of rl){
-        let input = line.split(' ');
+    for await (const line of rl) {
+        let middle = Math.floor(line.length / 2);
+        let firstHalf = line.slice(0, middle);
+        let secondHalf = line.slice(middle, line.length);
 
-        switch (input[1]) {
-            case 'Y':
-                result += 2
-                break;            
-            case 'X':
-                result += 1
+        for(let i = 0; i < firstHalf.length; i++){
+            // console.log(firstHalf[i], secondHalf[i])
+            if(secondHalf.includes(firstHalf[i])){
+                // console.log(`${firstHalf[i]} ${secondHalf}`)
+                if(firstHalf[i].toLowerCase() === firstHalf[i]){
+                    temp += getAlphabetPosition(firstHalf[i])
+                } else {
+                    temp += getAlphabetPosition(firstHalf[i]) + 26
+                }
                 break;
-            case 'Z':
-                result += 3
-                break;
-            default:
-                console.log('Error')
-                break;
-        }
-        switch (input[0]) {
-            case 'B':
-                opponentResult += 2
-                break;            
-            case 'A':
-                opponentResult += 1
-                break;
-            case 'C':
-                opponentResult += 3
-                break;
-            default:
-                console.log('Error')
-                break;
-        }
-        let final = await getWin(input[0], input[1])
-        if(final === "Win"){
-            result += 6
-        } else if(final === "Loss"){
-            opponentResult += 6
-            // pass
-        } else if(final === "Tie"){
-            opponentResult += 3
-            result += 3
-        } else if(final === "Error"){
-            console.log(`${input[0]} ${input[1]}`)
-        }
+            
+            }
 
+        }
+        // return temp on last itteration
+        
     }
-    console.log({result});
+
+    
+    
+   
 }
+
+
+// get alphabet position
+function getAlphabetPosition(letter: string) {
+    return letter.toLowerCase().charCodeAt(0) - 96;
+}
+
+function test(input: string) {
+    let placeholder = 0;
+    for(let i = 0; i < input.length; i++){
+        if(input[i].toLowerCase() === input[i]){
+
+            placeholder += getAlphabetPosition(input[i])
+        } else {
+            placeholder += getAlphabetPosition(input[i]) + 26
+        }
+    }
+    return placeholder;
+}
+
 processLineByLine()
 .then(() => {
-    console.log(result - opponentResult)
-})
+    console.log(temp)
+}) 
 
-// Part Two starts here
 
-async function getPoint(draw:string, move:string) {
-    if(move == "Win") {
-        switch (draw) {
-            case 'A':
-                // Opponent used Rock, so we use Paper
-                return 2 + 6
-            case 'B':
-                // Opponent used Paper, so we use Scissors
-                return 3 + 6
-            case 'C':
-                // Opponent used Scissors, so we use Rock
-                return 1 + 6
-    }
-    } else if(move == "Loss") {
-        switch (draw) {
-            case 'A':
-                // Opponent used Rock, so we use Scissors
-                return 3
-            case 'B':
-                // Opponent used Paper, so we use Rock
-                return 1
-            case 'C':
-                // Opponent used Scissors, so we use Paper
-                return 2
-        }
-    } else if(move == "Tie") {
-        switch (draw) {
-            case 'A':
-                // Opponent used Rock, so we use Rock
-                return 1 + 3
-            case 'B':
-                // Opponent used Paper, so we use Paper
-                return 2 + 3
-            case 'C':
-                // Opponent used Scissors, so we use Scissors
-                return 3 + 3
-        }
-    }
-}
+console.log(test('rZ'))
 
-async function partTwo() {
+
+
+// Part 2
+let total: number = 0;
+
+const charCodes = Array.from({ length: 26 }, (_, i) => i + 97);
+const charsUpper = charCodes.map((c) => String.fromCharCode(c));
+
+const charList = [
+    ...charsUpper.map(v => v.toLowerCase()),
+    ...charsUpper
+]
+
+async function getBadge() {
     const fileStream = fs.createReadStream('data.txt');
     const rl = readline.createInterface({
         input: fileStream,
         crlfDelay: Infinity
     });
+    let tempArray: string[] = [];
+    let accountedFor: string[] = [];
+    for await (const line of rl) {
 
-    for await(const line of rl) {
-        let input = line.split(' ');
-        switch (input[1]) {
-            case 'Y':
-                realResult += await getPoint(input[0], 'Tie');
-                break;
-                case 'X':
-                realResult += await getPoint(input[0], 'Loss');
-                break;
-            case 'Z':
-                realResult += await getPoint(input[0], 'Win');
-                break;
+
+        if(accountedFor.includes(line)){
+            console.log('already accounted for')
+            continue;
         }
+        accountedFor.push(line)
+        tempArray.push(line)
+        if(tempArray.length === 3){
+            console.log(tempArray)
+            for(let j = 0; j < tempArray[0].length; j++){
+                if(tempArray[1].includes(tempArray[0][j]) && tempArray[2].includes(tempArray[0][j])){
+                    console.log('found')
+                    total += test(tempArray[0][j])
+                }
+            }
+            tempArray = [];
+        }
+        /*
+        for(let i = 0; i < line.length; i++){
+            if(!accountedFor.includes(line[i])){
+                accountedFor.push(line[i])
+            } else {
+                console.log('already accounted for')
+                continue;
+            }
+            tempArray.push(line[i])
+            if(tempArray.length === 3){
+                console.log(tempArray)
+                for(let j = 0; j < tempArray[0].length; j++){
+                    if(tempArray[1].includes(tempArray[0][j]) && tempArray[2].includes(tempArray[0][j])){
+                        console.log('found')
+                        total += test(tempArray[0][j])
+                    }
+                }
+                tempArray = [];
+            }
+        }
+        */
+
     }
+        
 }
 
-partTwo()
-.then(() => {
-    console.log(realResult)
-})
 
-// Q: what is the command for installing node:fs?
-// A: npm install @types/node
+getBadge().then(() => {
+    console.log({total})
+})
