@@ -77,7 +77,7 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
     if(err){
         console.log(err)
     }
-    console.log(data)
+    // console.log(data)
     console.log(parseInput(data))
 })
 
@@ -94,14 +94,17 @@ async function parseInput(data: string) {
     let newData = data.split(/\n/);
 
     let groups = groupArr(newData, 3);
+    // console.log(groups)
 
     for(let i = 0; i < Math.floor(newData.length / 3); i++){
         // console.log(groups)
         let group = groups[i];
+        console.log(group)
         
 
-        const [first, second, third] = [group[0], group[1], group[2]];
-        // console.log({first, second, third})
+        // remove \r from first, second, third
+        let [first, second, third] = [group[0].replace(/\r/g, ''), group[1].replace(/\r/g, ''), group[2].replace(/\r/g, '')]
+        console.log({first, second, third})
 
         const allItems = [first.split(""), second.split(""), third.split("")];
         const sharedItems = allItems.reduce((a, b) => a.filter(c => b.includes(c)));
@@ -110,102 +113,3 @@ async function parseInput(data: string) {
     }
     return total
 }
-
-
-
-
-/*
-
-// Part 2
-let total: number = 0;
-
-const charCodes = Array.from({ length: 26 }, (_, i) => i + 97);
-const charsUpper = charCodes.map((c) => String.fromCharCode(c));
-
-const charList = [
-    ...charsUpper.map(v => v.toLowerCase()),
-    ...charsUpper
-]
-
-async function getBadge() {
-    const fileStream = fs.createReadStream('data.txt');
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-    let tempArray: string[] = [];
-    let accountedFor: string[] = [];
-    let count: number = 0;
-    let tempCount: number[] = [];
-    for await (const line of rl) {
-
-
-        if(accountedFor.includes(line)){
-            console.log('already accounted for')
-            continue;
-        }
-        accountedFor.push(line)
-        tempArray.push(line)
-        if(tempArray.length === 3){
-            console.log(tempArray)
-            for(let j = 0; j < tempArray[0].length; j++){
-                if(tempArray[0][j] === tempArray[0][j].toLowerCase()){
-                    
-                }
-
-                let allItems = [tempArray[0].split(""), tempArray[1].split(""), tempArray[2].split("")];
-                let sharedItems = allItems.reduce((a, b) => a.filter(c => b.includes(c)));
-
-                total += test(sharedItems.join(""))
-
-                
-
-                if(tempArray[1].includes(tempArray[0][j]) && tempArray[2].includes(tempArray[0][j])){
-                    // check if this letter has already been accounted for
-                    if(tempCount.includes(j)){
-                        console.log('already accounted for')
-                        continue;
-                    }
-                    count++
-                    tempCount.push(j)
-                    console.log(`count: ${count}; Expected final count: 100`)
-                    console.log('found')
-                    total += test(tempArray[0][j])
-                }
-                
-
-            }
-            tempArray = [];
-        }
-        
-        for(let i = 0; i < line.length; i++){
-            if(!accountedFor.includes(line[i])){
-                accountedFor.push(line[i])
-            } else {
-                console.log('already accounted for')
-                continue;
-            }
-            tempArray.push(line[i])
-            if(tempArray.length === 3){
-                console.log(tempArray)
-                for(let j = 0; j < tempArray[0].length; j++){
-                    if(tempArray[1].includes(tempArray[0][j]) && tempArray[2].includes(tempArray[0][j])){
-                        console.log('found')
-                        total += test(tempArray[0][j])
-                    }
-                }
-                tempArray = [];
-            }
-        }
-        
-
-    }
-        
-}
-
-getBadge().then(() => {
-    console.log({total})
-})
-
-
-*/
